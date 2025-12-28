@@ -1,0 +1,10 @@
+aisuite
+albumentationsx
+cleanlab
+matplotlib
+numpy
+pydantic
+pandas
+opencv-python
+timm
+torch
