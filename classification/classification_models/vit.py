@@ -15,6 +15,12 @@ import cv2
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from dataclasses import dataclass
+import sys
+import wandb
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+from improvements.mixup import mixup_collate_fn
 
 @dataclass
 class ModelConfig:
@@ -83,34 +89,35 @@ class ClassificationModel(pl.LightningModule):
         return self.model(x)
     
     def training_step(self, batch, batch_idx):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.criterion(y_hat, y)
-        
-        # Calculate accuracy
-        preds = torch.argmax(y_hat, dim=1)
-        acc = (preds == y).float().mean()
-        
-        # Log metrics
-        self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log('train_acc', acc, on_step=False, on_epoch=True, prog_bar=True)
-        
-        return loss
+            # Unpack the dict from our custom collate_fn
+            x = batch["x"]
+            y_a, y_b = batch["y_a"], batch["y_b"]
+            lam = batch["lam"]
+            
+            y_hat = self(x)
+            
+            # Mixup Loss: weighted sum of two cross-entropy calculations
+            loss = lam * self.criterion(y_hat, y_a) + (1 - lam) * self.criterion(y_hat, y_b)
+            
+            # For accuracy, we usually just compare against the dominant label (y_a)
+            preds = torch.argmax(y_hat, dim=1)
+            acc = (preds == y_a).float().mean()
+            
+            self.log('train_loss', loss, on_epoch=True, prog_bar=True)
+            self.log('train_acc', acc, on_epoch=True, prog_bar=True)
+            return 
+            
     
     def validation_step(self, batch, batch_idx):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.criterion(y_hat, y)
-        
-        # Calculate accuracy
-        preds = torch.argmax(y_hat, dim=1)
-        acc = (preds == y).float().mean()
-        
-        # Log metrics
-        self.log('val_loss', loss, on_epoch=True, prog_bar=True)
-        self.log('val_acc', acc, on_epoch=True, prog_bar=True)
-        
-        return loss
+            # Validation batch is still a standard (x, y) tuple
+            x, y = batch
+            y_hat = self(x)
+            loss = self.criterion(y_hat, y)
+            acc = (torch.argmax(y_hat, dim=1) == y).float().mean()
+            
+            self.log('val_loss', loss, on_epoch=True, prog_bar=True)
+            self.log('val_acc', acc, on_epoch=True, prog_bar=True)
+            return loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
@@ -140,7 +147,7 @@ if __name__ == '__main__':
         num_classes=10,
         learning_rate=1e-3,
         weight_decay=0.01,
-        pretrained=True
+        pretrained=False,
     )
 
     model = ClassificationModel(config)
@@ -179,14 +186,15 @@ if __name__ == '__main__':
     print(f"Validation samples: {len(val_dataset)}")
     print(f"Classes: {train_dataset.classes}")
 
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=0)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=0, collate_fn=mixup_collate_fn)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=0)
 
     # Train
     trainer = pl.Trainer(
-        max_epochs=50,
+        max_epochs=10,
         accelerator='auto',
         devices=1,
+        logger=WandbLogger(project="imagewoof-160", name="tinynet_mixup"),
         callbacks=[
             ModelCheckpoint(
                 monitor='val_acc', 
