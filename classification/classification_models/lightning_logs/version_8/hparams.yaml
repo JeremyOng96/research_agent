@@ -1,6 +1,0 @@
-config: !!python/object:__main__.ModelConfig
-  learning_rate: 0.001
-  model_name: tinynet_e.in1k
-  num_classes: 10
-  pretrained: true
-  weight_decay: 0.01
