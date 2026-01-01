@@ -1,97 +1,136 @@
 import torch
 import torch.nn.functional as F
-from typing import List, Tuple, Union
+from improvements.improvement_method import ImprovementMethod
 
-class LocalBinaryPatternBatch:
-    """
-    Implements Local Binary Pattern (LBP) as a batch processing step.
-    This is designed to be used within a collate_fn or as a post-processing 
-    step in a PyTorch DataLoader pipeline.
+
+class LocalBinaryPattern(ImprovementMethod):
+    """Local Binary Pattern augmentation method with built-in transformation."""
     
-    Attributes:
-        p (int): Number of circularly symmetric neighbor set points (default: 8).
-        r (int): Radius of circle (spatial resolution of the operator) (default: 1).
-    """
+    @staticmethod
+    def _apply_lbp_transform(x: torch.Tensor, radius: int = 1) -> torch.Tensor:
+        """
+        Apply LBP transformation to a batch of images.
+        
+        Args:
+            x: Batch of images (B, C, H, W)
+            radius: LBP radius parameter
+        
+        Returns:
+            LBP transformed images (B, C, H, W)
+        """
+        if x.dim() != 4:
+            raise ValueError(f"Expected 4D tensor (B, C, H, W), got {x.dim()}D")
 
-    def __init__(self, radius: int = 1):
-        self.radius = radius
         # Define the 8 neighbors for a standard 3x3 LBP (Radius 1)
-        # Order: Top-Left, Top, Top-Right, Right, Bottom-Right, Bottom, Bottom-Left, Left
-        self.offsets = [
+        offsets = [
             (-1, -1), (-1, 0), (-1, 1),
             (0, 1),   (1, 1),  (1, 0),
             (1, -1),  (0, -1)
         ]
 
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            x (torch.Tensor): Batch of images of shape (B, C, H, W).
-                             Values are expected to be in range [0, 1] or [0, 255].
-        
-        Returns:
-            torch.Tensor: LBP transformed batch of shape (B, C, H, W).
-        """
-        if x.dim() != 4:
-            raise ValueError(f"Expected 4D tensor (B, C, H, W), got {x.dim()}D")
-
         b, c, h, w = x.shape
-        # Pad the input to handle edges based on radius
-        padded = F.pad(x, (self.radius, self.radius, self.radius, self.radius), mode='reflect')
-        
-        # Initialize LBP output
+        padded = F.pad(x, (radius, radius, radius, radius), mode='reflect')
         lbp_output = torch.zeros_like(x, dtype=torch.float32)
 
         # Iterate through the 8 neighbors
-        for i, (dy, dx) in enumerate(self.offsets):
-            # Calculate the binary weight (2^i)
+        for i, (dy, dx) in enumerate(offsets):
             weight = 2**i
-            
-            # Extract the shifted neighbor window
-            # We slice the padded image to get the same spatial size as original x
-            # Start indices based on offset relative to (radius, radius)
-            y_start = self.radius + dy
-            x_start = self.radius + dx
-            
+            y_start = radius + dy
+            x_start = radius + dx
             neighbor_window = padded[:, :, y_start:y_start + h, x_start:x_start + w]
-            
-            # Comparison: 1 if neighbor >= center, else 0
-            # We use .float() to allow multiplication with weight
             mask = (neighbor_window >= x).float()
-            
-            # Accumulate the weighted sum
             lbp_output += mask * weight
-
+            
         return lbp_output
-
-def lbp_collate_fn(batch: List[Tuple[torch.Tensor, Union[int, torch.Tensor]]]) -> Tuple[torch.Tensor, torch.Tensor]:
-    """
-    Custom collate_fn that applies LBP transformation to the batch.
     
-    Args:
-        batch: List of tuples (image_tensor, label)
+    @staticmethod
+    def collate_train_step_fn(batch, **kwargs):
+        """
+        Apply LBP transformation to training batch.
         
-    Returns:
-        Tuple of (lbp_image_batch, label_batch)
-    """
-    images, labels = zip(*batch)
-    
-    # Stack images into (B, C, H, W)
-    image_batch = torch.stack(images, dim=0)
-    
-    # Stack labels
-    if isinstance(labels[0], torch.Tensor):
-        label_batch = torch.stack(labels, dim=0)
-    else:
-        label_batch = torch.tensor(labels)
+        Args:
+            batch: List of (image, label) tuples
+            **kwargs: 
+                - apply_lbp (bool): Whether to apply LBP. Default: True
+                - radius (int): LBP radius. Default: 1
+        """
+        apply_lbp = kwargs.get('apply_lbp', True)
+        radius = kwargs.get('radius', 1)
+        
+        x = torch.stack([item[0] for item in batch])
+        y = torch.tensor([item[1] for item in batch], dtype=torch.long)
+        
+        # Apply LBP transformation if requested
+        if apply_lbp:
+            x = LocalBinaryPattern._apply_lbp_transform(x, radius=radius)
+            x = x / 255.0  # Normalize to [0, 1]
+        
+        return {
+            "x": x,
+            "y": y
+        }
 
-    # Apply LBP
-    # Note: LBP is typically applied to grayscale. 
-    # If images are RGB, this applies LBP per channel.
-    lbp_transformer = LocalBinaryPatternBatch(radius=1)
-    lbp_batch = lbp_transformer(image_batch)
-    
-    # Normalize LBP values to [0, 1] range if needed (LBP max is 255)
-    lbp_batch = lbp_batch / 255.0
+    @staticmethod
+    def collate_val_step_fn(batch, **kwargs):
+        """
+        Apply LBP transformation to validation batch.
+        
+        Args:
+            batch: List of (image, label) tuples
+            **kwargs:
+                - apply_lbp (bool): Whether to apply LBP. Default: True
+                - radius (int): LBP radius. Default: 1
+        """
+        apply_lbp = kwargs.get('apply_lbp', True)
+        radius = kwargs.get('radius', 1)
+        
+        x = torch.stack([item[0] for item in batch])
+        y = torch.tensor([item[1] for item in batch], dtype=torch.long)
+        
+        # Apply LBP transformation if requested
+        if apply_lbp:
+            x = LocalBinaryPattern._apply_lbp_transform(x, radius=radius)
+            x = x / 255.0  # Normalize to [0, 1]
+        
+        return {
+            "x": x,
+            "y": y
+        }
 
-    return lbp_batch, label_batch
+    @staticmethod
+    def loss_fn(preds, batch, **kwargs):
+        """
+        Compute standard cross-entropy loss.
+        
+        Args:
+            preds: Model predictions
+            batch: Dict with 'y' (labels)
+            **kwargs: Additional parameters (unused)
+        """
+        y = batch['y']
+        return F.cross_entropy(preds, y)
+
+
+if __name__ == "__main__":
+    from torch.utils.data import DataLoader
+    
+    # Training loader with LBP
+    train_loader = DataLoader(
+        dataset, 
+        batch_size=32, 
+        collate_fn=lambda b: LocalBinaryPattern.collate_train_step_fn(b, apply_lbp=True, radius=1)
+    )
+    
+    # Validation loader with LBP
+    val_loader = DataLoader(
+        dataset,
+        batch_size=32,
+        collate_fn=lambda b: LocalBinaryPattern.collate_val_step_fn(b, apply_lbp=True, radius=1)
+    )
+    
+    # In LightningModule:
+    # def training_step(self, batch, batch_idx):
+    #     x = batch["x"]
+    #     preds = self(x)
+    #     loss = LocalBinaryPattern.loss_fn(preds, batch)
+    #     return loss
