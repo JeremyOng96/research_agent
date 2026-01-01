@@ -1,0 +1,21 @@
+
+  | Name      | Type             | Params | Mode  | FLOPs
+---------------------------------------------------------------
+0 | model     | EfficientNet     | 774 K  | train | 0
+1 | criterion | CrossEntropyLoss | 0      | train | 0
+---------------------------------------------------------------
+774 K     Trainable params
+0         Non-trainable params
+774 K     Total params
+3.099     Total estimated model params size (MB)
+218       Modules in train mode
+0         Modules in eval mode
+0         Total Flops
+Epoch 9: 100%|█| 390/390 [05:58<00:00,  1.09it/s, v_num=q7sy, train_loss_step=2.28
+/opt/anaconda3/envs/research_agent_env/lib/python3.12/site-packages/pytorch_lightning/trainer/connectors/data_connector.py:434: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+/opt/anaconda3/envs/research_agent_env/lib/python3.12/site-packages/pytorch_lightning/trainer/connectors/data_connector.py:434: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=7` in the `DataLoader` to improve performance.
+/opt/anaconda3/envs/research_agent_env/lib/python3.12/site-packages/pytorch_lightning/utilities/data.py:79: Trying to infer the `batch_size` from an ambiguous collection. The batch size we found is 32. To avoid any miscalculations, use `self.log(..., batch_size=batch_size)`.
+/opt/anaconda3/envs/research_agent_env/lib/python3.12/site-packages/pytorch_lightning/loops/optimization/automatic.py:134: `training_step` returned `None`. If this was on purpose, ignore this warning...
+/opt/anaconda3/envs/research_agent_env/lib/python3.12/site-packages/pytorch_lightning/utilities/data.py:79: Trying to infer the `batch_size` from an ambiguous collection. The batch size we found is 6. To avoid any miscalculations, use `self.log(..., batch_size=batch_size)`.
+                                                                                  
+`Trainer.fit` stopped: `max_epochs=10` reached.

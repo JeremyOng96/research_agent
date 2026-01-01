@@ -17,6 +17,7 @@ from albumentations.pytorch import ToTensorV2
 from dataclasses import dataclass
 import sys
 import wandb
+from pytorch_lightning.loggers import WandbLogger
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -105,7 +106,7 @@ class ClassificationModel(pl.LightningModule):
             
             self.log('train_loss', loss, on_epoch=True, prog_bar=True)
             self.log('train_acc', acc, on_epoch=True, prog_bar=True)
-            return 
+            return loss
             
     
     def validation_step(self, batch, batch_idx):
@@ -147,7 +148,7 @@ if __name__ == '__main__':
         num_classes=10,
         learning_rate=1e-3,
         weight_decay=0.01,
-        pretrained=False,
+        pretrained=True,
     )
 
     model = ClassificationModel(config)
