@@ -2,8 +2,7 @@
 MMPretrain version of vit.py
 
 This script uses MMPretrain (formerly MMClassification) to train TinyNet with Mixup
-on the ImageWoof dataset. It provides the same functionality as the PyTorch Lightning
-version in vit.py but uses MMPretrain's config-based approach.
+on the ImageWoof dataset.
 
 Usage:
     python classification/classification_models/vit_mmpretrain.py
@@ -19,15 +18,22 @@ Features:
 import sys
 from pathlib import Path
 
-# Add mmpretrain to path
+# Add paths for imports
 project_root = Path(__file__).parent.parent
 mmpretrain_path = project_root / 'mmpretrain'
 sys.path.insert(0, str(mmpretrain_path))
+sys.path.insert(0, str(project_root))  # Add classification folder to path
 
 from mmengine.config import Config
 from mmengine.runner import Runner
 import mmpretrain
-# Import mmpretrain to register all components (visualizers, models, etc.)
+
+# Import custom transforms to register them
+try:
+    from improvements.gabor_transform import GaborFilter
+    print("✓ GaborFilter registered")
+except ImportError:
+    pass  # Not using custom transforms
 
 def print_dataset_info(cfg):
     """Print dataset information similar to vit.py"""

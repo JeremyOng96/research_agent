@@ -1,10 +1,6 @@
 # mmpretrain config for TinyNet with Mixup + Gabor Filter on ImageWoof dataset
-
-# Import custom transforms
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from classification.improvements.gabor_transform import GaborFilter
+# Note: Custom transforms (GaborFilter) must be imported in the training script
+# before loading this config to register them with the TRANSFORMS registry
 
 # Model settings
 model = dict(
