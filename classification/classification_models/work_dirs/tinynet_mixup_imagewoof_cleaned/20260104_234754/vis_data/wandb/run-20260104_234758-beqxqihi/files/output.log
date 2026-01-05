@@ -1,0 +1,111 @@
+/opt/anaconda3/envs/research_agent_env/lib/python3.10/site-packages/mmcv/cnn/bricks/transformer.py:33: UserWarning: Fail to import ``MultiScaleDeformableAttention`` from ``mmcv.ops.multi_scale_deform_attn``, You should install ``mmcv`` rather than ``mmcv-lite`` if you need this module.
+  warnings.warn('Fail to import ``MultiScaleDeformableAttention`` from '
+01/04 23:48:02 - mmengine - [4m[97mINFO[0m - Because batch augmentations are enabled, the data preprocessor automatically enables the `to_onehot` option to generate one-hot format labels.
+01/04 23:48:04 - mmengine - [4m[97mINFO[0m - backbone feature_info[0]: {'stage': 1, 'reduction': 2, 'module': 'blocks.0', 'num_chs': 8}
+01/04 23:48:04 - mmengine - [4m[97mINFO[0m - backbone feature_info[1]: {'stage': 2, 'reduction': 4, 'module': 'blocks.1', 'num_chs': 16}
+01/04 23:48:04 - mmengine - [4m[97mINFO[0m - backbone feature_info[2]: {'stage': 3, 'reduction': 8, 'module': 'blocks.2', 'num_chs': 24}
+01/04 23:48:04 - mmengine - [4m[97mINFO[0m - backbone feature_info[3]: {'stage': 5, 'reduction': 16, 'module': 'blocks.4', 'num_chs': 56}
+01/04 23:48:04 - mmengine - [4m[97mINFO[0m - backbone feature_info[4]: {'stage': 7, 'reduction': 32, 'module': 'blocks.6', 'num_chs': 160}
+01/04 23:48:04 - mmengine - [4m[97mINFO[0m - Distributed training is not used, all SyncBatchNorm (SyncBN) layers in the model will be automatically reverted to BatchNormXd layers if they are used.
+01/04 23:48:04 - mmengine - [4m[97mINFO[0m - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) RuntimeInfoHook
+(BELOW_NORMAL) LoggerHook
+ --------------------
+before_train:
+(VERY_HIGH   ) RuntimeInfoHook
+(NORMAL      ) IterTimerHook
+(VERY_LOW    ) CheckpointHook
+ --------------------
+before_train_epoch:
+(VERY_HIGH   ) RuntimeInfoHook
+(NORMAL      ) IterTimerHook
+(NORMAL      ) DistSamplerSeedHook
+ --------------------
+before_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook
+(NORMAL      ) IterTimerHook
+ --------------------
+after_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook
+(NORMAL      ) IterTimerHook
+(BELOW_NORMAL) LoggerHook
+(LOW         ) ParamSchedulerHook
+(VERY_LOW    ) CheckpointHook
+ --------------------
+after_train_epoch:
+(NORMAL      ) IterTimerHook
+(LOW         ) ParamSchedulerHook
+(VERY_LOW    ) CheckpointHook
+ --------------------
+before_val:
+(VERY_HIGH   ) RuntimeInfoHook
+ --------------------
+before_val_epoch:
+(NORMAL      ) IterTimerHook
+ --------------------
+before_val_iter:
+(NORMAL      ) IterTimerHook
+ --------------------
+after_val_iter:
+(NORMAL      ) IterTimerHook
+(NORMAL      ) VisualizationHook
+(BELOW_NORMAL) LoggerHook
+ --------------------
+after_val_epoch:
+(VERY_HIGH   ) RuntimeInfoHook
+(NORMAL      ) IterTimerHook
+(BELOW_NORMAL) LoggerHook
+(LOW         ) ParamSchedulerHook
+(VERY_LOW    ) CheckpointHook
+ --------------------
+after_val:
+(VERY_HIGH   ) RuntimeInfoHook
+ --------------------
+after_train:
+(VERY_HIGH   ) RuntimeInfoHook
+(VERY_LOW    ) CheckpointHook
+ --------------------
+before_test:
+(VERY_HIGH   ) RuntimeInfoHook
+ --------------------
+before_test_epoch:
+(NORMAL      ) IterTimerHook
+ --------------------
+before_test_iter:
+(NORMAL      ) IterTimerHook
+ --------------------
+after_test_iter:
+(NORMAL      ) IterTimerHook
+(NORMAL      ) VisualizationHook
+(BELOW_NORMAL) LoggerHook
+ --------------------
+after_test_epoch:
+(VERY_HIGH   ) RuntimeInfoHook
+(NORMAL      ) IterTimerHook
+(BELOW_NORMAL) LoggerHook
+ --------------------
+after_test:
+(VERY_HIGH   ) RuntimeInfoHook
+ --------------------
+after_run:
+(BELOW_NORMAL) LoggerHook
+ --------------------
+
+Applying dataset filtering...
+Traceback (most recent call last):
+  File "/Users/jeremyong/Desktop/research_agent/classification/classification_models/tinynet.py", line 209, in <module>
+    main()
+  File "/Users/jeremyong/Desktop/research_agent/classification/classification_models/tinynet.py", line 192, in main
+    runner.train_dataloader.dataset = filtered_dataset
+  File "/opt/anaconda3/envs/research_agent_env/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 420, in __setattr__
+    raise ValueError(f'{attr} attribute should not be set after {self.__class__.__name__} is initialized')
+ValueError: dataset attribute should not be set after DataLoader is initialized
+Traceback (most recent call last):
+  File "/Users/jeremyong/Desktop/research_agent/classification/classification_models/tinynet.py", line 209, in <module>
+    main()
+  File "/Users/jeremyong/Desktop/research_agent/classification/classification_models/tinynet.py", line 192, in main
+    runner.train_dataloader.dataset = filtered_dataset
+  File "/opt/anaconda3/envs/research_agent_env/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 420, in __setattr__
+    raise ValueError(f'{attr} attribute should not be set after {self.__class__.__name__} is initialized')
+ValueError: dataset attribute should not be set after DataLoader is initialized

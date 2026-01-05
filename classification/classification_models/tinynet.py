@@ -105,9 +105,25 @@ def print_model_info(cfg):
 
 
 def main():
+    import argparse
+    import json
+    from torch.utils.data import Subset
+    
+    parser = argparse.ArgumentParser(description='Train TinyNet on ImageWoof')
+    parser.add_argument(
+        '--config',
+        default='configs/tinynet_mixup_imagewoof.py',
+        help='Config file path (relative to this script)'
+    )
+    parser.add_argument(
+        '--use-cleaned-dataset',
+        action='store_true',
+        help='Use cleaned dataset (filter out 533 issue indices from Cleanlab)'
+    )
+    args = parser.parse_args()
+    
     # Load config (equivalent to vit.py's ModelConfig and hyperparameters)
-    config_file = 'configs/tinynet_mixup_imagewoof.py'
-    config_path = Path(__file__).parent / config_file
+    config_path = Path(__file__).parent / args.config
     
     if not config_path.exists():
         print(f"Error: Config file not found at {config_path}")
@@ -116,8 +132,38 @@ def main():
     
     cfg = Config.fromfile(str(config_path))
     
+    # Load clean indices if using cleaned dataset
+    clean_indices = None
+    if args.use_cleaned_dataset:
+        json_path = Path(__file__).parent / 'configs' / 'clean_dataset.json'
+        if not json_path.exists():
+            print(f"Error: clean_dataset.json not found at {json_path}")
+            print("Please run the cleaning agent first to generate this file.")
+            return
+        
+        with open(json_path, 'r') as f:
+            metadata = json.load(f)
+        
+        issue_indices = set(metadata['issue_indices'])
+        total_samples = metadata['total_samples']
+        clean_indices = [i for i in range(total_samples) if i not in issue_indices]
+        
+        print("\n" + "="*60)
+        print("USING CLEANED DATASET")
+        print("="*60)
+        print(f"Total samples: {total_samples}")
+        print(f"Issue samples (removed): {len(issue_indices)}")
+        print(f"Clean samples (used): {len(clean_indices)}")
+        print("="*60 + "\n")
+        
+        # Update work_dir if not already set to cleaned version
+        if 'cleaned' not in str(cfg.get('work_dir', '')):
+            base_work_dir = cfg.get('work_dir', './work_dirs/tinynet_mixup_imagewoof')
+            cfg.work_dir = str(Path(base_work_dir).parent / f"{Path(base_work_dir).name}_cleaned")
+    
     # Set work directory (equivalent to PyTorch Lightning's default_root_dir)
-    cfg.work_dir = './work_dirs/tinynet_mixup_imagewoof'
+    if not hasattr(cfg, 'work_dir') or cfg.work_dir is None:
+        cfg.work_dir = './work_dirs/tinynet_mixup_imagewoof'
     
     # Print information (equivalent to vit.py's print statements)
     print_dataset_info(cfg)
@@ -127,12 +173,43 @@ def main():
     print("Starting Training")
     print("=" * 60)
     print(f"Work directory: {cfg.work_dir}")
+    print(f"Config: {args.config}")
     print(f"Logs and checkpoints will be saved to: {cfg.work_dir}")
     print("=" * 60)
     print()
     
-    # Build the runner (equivalent to pl.Trainer)
+    # Build the runner first (equivalent to pl.Trainer)
     runner = Runner.from_cfg(cfg)
+    
+    # Apply dataset filtering AFTER runner is built
+    if clean_indices is not None:
+        from torch.utils.data import DataLoader
+        
+        print("\nApplying dataset filtering...")
+        original_dataset = runner.train_dataloader.dataset
+        original_size = len(original_dataset)
+        filtered_dataset = Subset(original_dataset, clean_indices)
+        
+        # Get dataloader config
+        batch_size = runner.train_dataloader.batch_size
+        num_workers = runner.train_dataloader.num_workers
+        
+        # Create a new dataloader with the filtered dataset
+        # We need to rebuild the dataloader because PyTorch DataLoaders are immutable
+        new_dataloader = DataLoader(
+            filtered_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            persistent_workers=num_workers > 0,
+            pin_memory=True,
+            collate_fn=runner.train_dataloader.collate_fn,
+        )
+        
+        # Replace the entire dataloader (not just the dataset)
+        runner._train_dataloader = new_dataloader
+        
+        print(f"✓ Filtered training dataset: {original_size} → {len(filtered_dataset)} samples\n")
     
     # Start training (equivalent to trainer.fit())
     runner.train()

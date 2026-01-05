@@ -1,0 +1,14 @@
+{"time":"2026-01-04T23:47:59.547967+01:00","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-01-04T23:47:59.577919+01:00","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not start GPU binary: fork/exec /opt/anaconda3/envs/research_agent_env/lib/python3.10/site-packages/wandb/bin/gpu_stats: bad CPU type in executable"}
+{"time":"2026-01-04T23:47:59.814816+01:00","level":"INFO","msg":"stream: created new stream","id":"beqxqihi"}
+{"time":"2026-01-04T23:47:59.814914+01:00","level":"INFO","msg":"handler: started","stream_id":"beqxqihi"}
+{"time":"2026-01-04T23:47:59.815526+01:00","level":"INFO","msg":"stream: started","id":"beqxqihi"}
+{"time":"2026-01-04T23:47:59.816421+01:00","level":"INFO","msg":"writer: started","stream_id":"beqxqihi"}
+{"time":"2026-01-04T23:47:59.816481+01:00","level":"INFO","msg":"sender: started","stream_id":"beqxqihi"}
+{"time":"2026-01-04T23:48:02.794188+01:00","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-01-04T23:48:02.795788+01:00","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-01-04T23:48:05.983048+01:00","level":"INFO","msg":"stream: closing","id":"beqxqihi"}
+{"time":"2026-01-04T23:48:06.714181+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-01-04T23:48:07.007999+01:00","level":"INFO","msg":"handler: closed","stream_id":"beqxqihi"}
+{"time":"2026-01-04T23:48:07.00885+01:00","level":"INFO","msg":"sender: closed","stream_id":"beqxqihi"}
+{"time":"2026-01-04T23:48:07.010666+01:00","level":"INFO","msg":"stream: closed","id":"beqxqihi"}

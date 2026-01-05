@@ -1,0 +1,316 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        code_path: source-imagewoof-160-classification_classification_models_tinynet.py
+        e:
+            24js8uo97x3f1xpbjdyj4naqmvmg2ol8:
+                args:
+                    - --use-cleaned-dataset
+                codePath: classification/classification_models/tinynet.py
+                codePathLocal: tinynet.py
+                cpu_count: 4
+                cpu_count_logical: 8
+                disk:
+                    /:
+                        total: "250685575168"
+                        used: "248731611136"
+                email: jeremyunderscore@gmail.com
+                executable: /opt/anaconda3/envs/research_agent_env/bin/python
+                git:
+                    commit: 758b33b2894a9d6c1b5de3e8551a05910e29da40
+                    remote: git@github.com:JeremyOng96/research_agent.git
+                host: MacBookPro
+                memory:
+                    total: "8589934592"
+                os: macOS-10.16-x86_64-i386-64bit
+                program: /Users/jeremyong/Desktop/research_agent/classification/classification_models/tinynet.py
+                python: CPython 3.10.18
+                root: /Users/jeremyong/Desktop/research_agent/classification/classification_models/work_dirs/tinynet_mixup_imagewoof_cleaned/20260104_234929/vis_data
+                startedAt: "2026-01-04T22:49:33.532213Z"
+                writerId: 24js8uo97x3f1xpbjdyj4naqmvmg2ol8
+        m: []
+        python_version: 3.10.18
+        t:
+            "1":
+                - 1
+                - 37
+                - 41
+                - 82
+            "2":
+                - 1
+                - 37
+                - 41
+                - 49
+                - 63
+                - 80
+                - 82
+            "3":
+                - 2
+                - 13
+            "4": 3.10.18
+            "5": 0.23.1
+            "12": 0.23.1
+            "13": darwin-x86_64
+data_preprocessor:
+    value:
+        mean:
+            - 123.675
+            - 116.28
+            - 103.53
+        num_classes: 10
+        std:
+            - 58.395
+            - 57.12
+            - 57.375
+        to_rgb: true
+dataset_type:
+    value: CustomDataset
+default_hooks:
+    value:
+        checkpoint:
+            interval: 1
+            max_keep_ckpts: 3
+            save_best: auto
+            type: CheckpointHook
+        logger:
+            interval: 50
+            type: LoggerHook
+        param_scheduler:
+            type: ParamSchedulerHook
+        sampler_seed:
+            type: DistSamplerSeedHook
+        timer:
+            type: IterTimerHook
+        visualization:
+            enable: false
+            type: VisualizationHook
+default_scope:
+    value: mmpretrain
+env_cfg:
+    value:
+        cudnn_benchmark: false
+        dist_cfg:
+            backend: nccl
+        mp_cfg:
+            mp_start_method: fork
+            opencv_num_threads: 0
+load_from:
+    value: null
+log_level:
+    value: INFO
+model:
+    value:
+        backbone:
+            features_only: false
+            model_name: tinynet_e.in1k
+            pretrained: true
+            type: TIMMBackbone
+        head:
+            in_channels: 1280
+            loss:
+                loss_weight: 1
+                type: CrossEntropyLoss
+            num_classes: 10
+            topk:
+                - 1
+                - 5
+            type: LinearClsHead
+        neck:
+            type: GlobalAveragePooling
+        train_cfg:
+            augments:
+                - alpha: 0.2
+                  type: Mixup
+        type: ImageClassifier
+optim_wrapper:
+    value:
+        clip_grad:
+            max_norm: 1
+        optimizer:
+            lr: 0.001
+            type: AdamW
+            weight_decay: 0.01
+param_scheduler:
+    value:
+        - T_max: 10
+          begin: 0
+          by_epoch: true
+          end: 10
+          eta_min: 1e-05
+          type: CosineAnnealingLR
+randomness:
+    value:
+        deterministic: false
+        seed: 42
+resume:
+    value: false
+test_dataloader:
+    value:
+        batch_size: 32
+        dataset:
+            data_root: /Users/jeremyong/Desktop/research_agent/dataset/imagewoof-160/val
+            pipeline:
+                - type: LoadImageFromFile
+                - backend: pillow
+                  edge: short
+                  interpolation: bicubic
+                  scale: 256
+                  type: ResizeEdge
+                - crop_size: 224
+                  type: CenterCrop
+                - type: PackInputs
+            type: CustomDataset
+        num_workers: 4
+        persistent_workers: true
+        sampler:
+            shuffle: false
+            type: DefaultSampler
+test_evaluator:
+    value:
+        topk:
+            - 1
+            - 5
+        type: Accuracy
+test_pipeline:
+    value:
+        - type: LoadImageFromFile
+        - backend: pillow
+          edge: short
+          interpolation: bicubic
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
+train_cfg:
+    value:
+        by_epoch: true
+        max_epochs: 10
+        val_interval: 1
+train_dataloader:
+    value:
+        batch_size: 32
+        dataset:
+            data_root: /Users/jeremyong/Desktop/research_agent/dataset/imagewoof-160/train
+            pipeline:
+                - type: LoadImageFromFile
+                - backend: pillow
+                  interpolation: bicubic
+                  scale: 224
+                  type: RandomResizedCrop
+                - direction: horizontal
+                  prob: 0.5
+                  type: RandomFlip
+                - hparams:
+                    interpolation: bicubic
+                    pad_val:
+                        - 104
+                        - 116
+                        - 124
+                  magnitude_level: 9
+                  magnitude_std: 0.5
+                  num_policies: 2
+                  policies: timm_increasing
+                  total_level: 10
+                  type: RandAugment
+                - erase_prob: 0.25
+                  fill_color:
+                    - 103.53
+                    - 116.28
+                    - 123.675
+                  fill_std:
+                    - 57.375
+                    - 57.12
+                    - 58.395
+                  max_area_ratio: 0.3333333333333333
+                  min_area_ratio: 0.02
+                  mode: rand
+                  type: RandomErasing
+                - type: PackInputs
+            type: CustomDataset
+        num_workers: 4
+        persistent_workers: true
+        sampler:
+            shuffle: true
+            type: DefaultSampler
+train_pipeline:
+    value:
+        - type: LoadImageFromFile
+        - backend: pillow
+          interpolation: bicubic
+          scale: 224
+          type: RandomResizedCrop
+        - direction: horizontal
+          prob: 0.5
+          type: RandomFlip
+        - hparams:
+            interpolation: bicubic
+            pad_val:
+                - 104
+                - 116
+                - 124
+          magnitude_level: 9
+          magnitude_std: 0.5
+          num_policies: 2
+          policies: timm_increasing
+          total_level: 10
+          type: RandAugment
+        - erase_prob: 0.25
+          fill_color:
+            - 103.53
+            - 116.28
+            - 123.675
+          fill_std:
+            - 57.375
+            - 57.12
+            - 58.395
+          max_area_ratio: 0.3333333333333333
+          min_area_ratio: 0.02
+          mode: rand
+          type: RandomErasing
+        - type: PackInputs
+val_dataloader:
+    value:
+        batch_size: 32
+        dataset:
+            data_root: /Users/jeremyong/Desktop/research_agent/dataset/imagewoof-160/val
+            pipeline:
+                - type: LoadImageFromFile
+                - backend: pillow
+                  edge: short
+                  interpolation: bicubic
+                  scale: 256
+                  type: ResizeEdge
+                - crop_size: 224
+                  type: CenterCrop
+                - type: PackInputs
+            type: CustomDataset
+        num_workers: 4
+        persistent_workers: true
+        sampler:
+            shuffle: false
+            type: DefaultSampler
+val_evaluator:
+    value:
+        topk:
+            - 1
+            - 5
+        type: Accuracy
+vis_backends:
+    value:
+        - type: LocalVisBackend
+        - init_kwargs:
+            name: tinynet_mixup_mmpretrain
+            project: imagewoof-160
+          type: WandbVisBackend
+visualizer:
+    value:
+        type: Visualizer
+        vis_backends:
+            - type: LocalVisBackend
+            - init_kwargs:
+                name: tinynet_mixup_mmpretrain
+                project: imagewoof-160
+              type: WandbVisBackend
+work_dir:
+    value: work_dirs/tinynet_mixup_imagewoof_cleaned
